@@ -8,7 +8,7 @@ class IsCompanyAdmin(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if type(request.user) is AnonymousUser or request.user.employee is None:
+        if type(request.user) is AnonymousUser or not hasattr(request.user, 'employee'):
             return False
         employee = request.user.employee
         return employee.is_company_admin

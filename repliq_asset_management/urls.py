@@ -16,9 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.authtoken import views
+from rest_framework_swagger.views import get_swagger_view
+from drf_yasg import openapi
+
+# Bonus task: For automated API documentation
+schema_view = get_swagger_view(title='Repliq API Documentation')
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-token-auth/", views.obtain_auth_token),
-    path("asset/", include("asset_management.urls"))
+    path("asset/", include("asset_management.urls")),
+    path('api/documentation/', schema_view),
 ]
