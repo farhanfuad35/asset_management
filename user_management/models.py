@@ -42,7 +42,7 @@ class Employee(models.Model):
         self.user.groups.add(group)
 
     def __str__(self):
-        return f"{self.user.first_name}"
+        return f"{self.user.first_name} | ID: {self.pk}"
 
     class Meta:
         unique_together = ["employee_id", "company"]

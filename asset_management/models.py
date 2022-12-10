@@ -66,6 +66,8 @@ class Asset(models.Model):
             log.recieved_at = datetime.now()
             log.save()
         self.in_stock = True
+        self.current_owner = None
+        self.save()
 
     def __str__(self):
         return f'Asset ID: {self.asset_id} | {self.asset_type} | {self.company} | In Stock: {self.in_stock}'

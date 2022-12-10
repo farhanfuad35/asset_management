@@ -34,4 +34,7 @@ class IsSoftwareAdmin(permissions.BasePermission):
         if type(request.user) is AnonymousUser:
             return False
 
-        return request.user.is_stuff or request.user.is_superuser
+        if hasattr(request.user, 'is_stuff'):
+            return request.user.is_stuff
+        if hasattr(request.user, 'is_superuser'):
+            return request.user.is_superuser
