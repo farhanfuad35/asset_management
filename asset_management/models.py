@@ -9,7 +9,10 @@ class AssetTypes(models.Model):
     """
 
     name = models.CharField(max_length=100, unique=True)
-    description = models.CharField(max_length=100, default="")
+    description = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Asset(models.Model):
@@ -34,31 +37,25 @@ class Asset(models.Model):
         AssetTypes, related_name="items", on_delete=models.SET(get_unknown_type)
     )
     manufacturer = models.CharField(max_length=100)
-    purchased_at = models.DateTimeField()
-    purchased_from = models.CharField(max_length=100)
+    purchased_at = models.DateTimeField(blank=True, null=True)
+    purchased_from = models.CharField(max_length=100, help_text='Company/Shop the asset is purchased from', blank=True, null=True)
 
-    # Based on the assumption that one asset can be owned by at most a single user at any moment
+    # Based on the assumption that one asset can be owned by at most a single employee at any moment
     current_owner = models.ForeignKey(
-        Employee, on_delete=models.RESTRICT, null=True, related_name="my_assets"
+        Employee, on_delete=models.RESTRICT, null=True, blank=True, related_name="my_assets"
     )
+
+    in_stock = models.BooleanField()
 
     def get_last_log(self):
         return Log.objects.filter(asset=self)[0]
 
-    def in_company_stock(self):
-        log = self.get_last_log()
-        if log is None:
-            return True
-        if log.recieved_at is None:
-            return False
-        else:
-            return True
-
-    def assign_to(self, user: Employee):
-        if self.in_company_stock():
-            self.current_owner = user
+    def assign_to(self, employee: Employee):
+        if self.in_stock:
+            self.current_owner = employee
+            self.in_stock = False
             self.save()
-            log = Log(asset=self, owner=user)
+            log = Log(asset=self, owner=employee)
             log.save()
         else:
             raise AssetNotInStock(self.asset_id, self.current_owner)
@@ -68,6 +65,10 @@ class Asset(models.Model):
         if log is not None:
             log.recieved_at = datetime.now()
             log.save()
+        self.in_stock = True
+
+    def __str__(self):
+        return f'Asset ID: {self.asset_id} | {self.asset_type} | {self.company} | In Stock: {self.in_stock}'
 
     class Meta:
         constraints = [
@@ -95,8 +96,8 @@ class Log(models.Model):
 
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="logs")
     owner = models.ForeignKey(Employee, on_delete=models.SET(get_sentinel_user))
-    distributed_at = models.DateTimeField(auto_now_add=True)
-    recieved_at = models.DateTimeField(null=True)
+    distributed_at = models.DateTimeField(auto_now_add=True, blank=True)
+    recieved_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-distributed_at"]

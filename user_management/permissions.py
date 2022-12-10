@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from django.contrib.auth.models import AnonymousUser
 
 
 class IsCompanyAdmin(permissions.BasePermission):
@@ -7,7 +8,7 @@ class IsCompanyAdmin(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user is None or request.user.employee is None:
+        if type(request.user) is AnonymousUser or request.user.employee is None:
             return False
         employee = request.user.employee
         return employee.is_company_admin
@@ -19,7 +20,7 @@ class IsEmployee(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user is None or request.user.employee is None:
+        if type(request.user) is AnonymousUser or request.user.employee is None:
             return False
         return True
 
@@ -30,7 +31,7 @@ class IsSoftwareAdmin(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user is None:
+        if type(request.user) is AnonymousUser:
             return False
 
         return request.user.is_stuff or request.user.is_superuser

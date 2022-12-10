@@ -3,9 +3,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser, Group, BaseUserManager
 
-# Create your models here.
-
-
 class Company(models.Model):
     name = models.CharField(max_length=100, unique=True)
     address = models.CharField(max_length=200, default="")
@@ -31,7 +28,8 @@ class Employee(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="employees"
     )
-    is_company_admin = models.BooleanField(default=False)
+    is_company_admin = models.BooleanField()
+    in_service = models.BooleanField()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
